@@ -220,6 +220,17 @@ class PandasMeta:
         return (q('{"b"$x}', [any(x) for x in res]), cols)
 
     @convert_result
+    def cumsum(self, axis=0, skipna=True):
+        res, cols = preparse_computations(self, axis, skipna)
+        return (q(
+            '{[row]' 
+            '{$[11h=type x;' 
+            '{[x1; y1] `$string[x1], string y1} scan x;' 
+            'sums x]} each row}', 
+            res
+        ), cols)
+
+    @convert_result
     def max(self, axis=0, skipna=True, numeric_only=False):
         res, cols = preparse_computations(self, axis, skipna, numeric_only)
         return (q(
