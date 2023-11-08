@@ -4,6 +4,11 @@
 
 	The changelog presented here outlines changes to PyKX when operating within a Python environment specifically, if you require changelogs associated with PyKX operating under a q environment see [here](./underq-changelog.md).
 
+## PyKX 2.2.0
+
+### Additions
+ - [Pandas API](../user-guide/advanced/Pandas_API.ipynb) Added skewness to Pandas API.
+
 ## PyKX 2.1.0
 
 #### Release Date

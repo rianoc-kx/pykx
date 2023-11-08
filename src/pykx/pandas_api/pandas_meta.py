@@ -220,17 +220,6 @@ class PandasMeta:
         return (q('{"b"$x}', [any(x) for x in res]), cols)
 
     @convert_result
-    def cumsum(self, axis=0, skipna=True):
-        res, cols = preparse_computations(self, axis, skipna)
-        return (q(
-            '{[row]' 
-            '{$[11h=type x;' 
-            '{[x1; y1] `$string[x1], string y1} scan x;' 
-            'sums x]} each row}', 
-            res
-        ), cols)
-
-    @convert_result
     def max(self, axis=0, skipna=True, numeric_only=False):
         res, cols = preparse_computations(self, axis, skipna, numeric_only)
         return (q(
@@ -253,6 +242,17 @@ class PandasMeta:
             '{[row; minc] {$[y > 0; $[y>count[x]; 0N; prd x]; prd x]}[;minc] each row}',
             res,
             min_count
+        ), cols)
+
+    @convert_result
+    def skew(self, axis=0, skipna=True, numeric_only=False):
+        res, cols = preparse_computations(self, axis, skipna, numeric_only)
+        return (q(
+            '{[row]'
+            'm:{(sum(y-avg y)xexp x)%count y};'
+            'u:{sqrt[n*n-1]%neg[2]+n:count x};'
+            '{[u;m;x](u[x]*m[3][x]%(m[2][x]xexp 3%2))}[u;m]each row}',
+            res
         ), cols)
 
     @convert_result
