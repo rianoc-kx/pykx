@@ -328,6 +328,17 @@ def _rename_columns(tab, labels):
                  tab, labels)  # noqa
     else:
         return q('{c:cols x; c:@[c;c?key y;y]; c xcol x}', tab, labels)
+    
+
+def _prefix_columns(tab, prefix):
+        if "Keyed" in str(type(tab)):
+            return q('''{
+                    c:cols value x;
+                    c: `$"hola" , /: string c;
+                    key[x]!c xcol value x}''',
+                    tab, prefix)  # noqa
+        else:
+            return q('{c:cols x; c: `$"hola" ,/: string c; c xcol x}', tab)
 
 
 class PandasIndexing:
@@ -451,6 +462,19 @@ class PandasReindexing:
                 t = _rename_index(t, index)
             if columns is not None:
                 t = _rename_columns(t, columns)
+
+        return t
+    
+    def add_prefix(self, prefix=None, axis=0):
+        t = self
+        
+        if prefix:
+            if axis == 0:
+                t = _prefix_columns(t, prefix)
+            elif axis == 1:
+                t = _rename_columns(t, labels)
+            else:
+                raise ValueError(f'No axis named {axis}')
 
         return t
 
