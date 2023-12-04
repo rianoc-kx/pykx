@@ -255,3 +255,8 @@ class PandasMeta:
             res,
             min_count
         ), cols)
+
+    @convert_result
+    def count(self, axis=0, numeric_only=False):
+            res, cols = preparse_computations(self, axis, True, numeric_only)
+            return (q('{[row] count each row}',res), cols)
