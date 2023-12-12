@@ -255,3 +255,12 @@ class PandasMeta:
             res,
             min_count
         ), cols)
+    
+    @convert_result
+    def nunique(self, axis=0, dropna=True):
+        res, cols = preparse_computations(self, axis, skipna=False)
+        filterNan = q('{$[11h = type x;x;'
+                 '0h = type x;(x where not null x except w),(w:x where 10h=type each x);'
+                 'x where not null x]}each')
+        res = filterNan(res) if dropna else res
+        return q('(\'[count;distinct]\')', res), cols
