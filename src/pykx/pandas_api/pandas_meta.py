@@ -295,9 +295,10 @@ class PandasMeta:
         res, cols = preparse_computations(self, axis, skipna, numeric_only)
         return (q(
             '{[row]'
-            'm:{(sum(y-avg y)xexp x)%count y};'
-            'u:{sqrt[n*n-1]%neg[2]+n:count x};'
-            '{[u;m;x](u[x]*m[3][x]%(m[2][x]xexp 3%2))}[u;m]each row}',
+            # adjusted Fisher-Pearson standardized moment
+            'm:{(sum(x-avg x)xexp y)%count x};'
+            'g1:{[m;x]m:m[x];m[3]%m[2]xexp 3%2}[m];'
+            '{[g1;x]g1[x]*sqrt[n*n-1]%neg[2]+n:count x}[g1] each row}',
             res
         ), cols)
 
@@ -370,5 +371,5 @@ class PandasMeta:
 
     @convert_result
     def count(self, axis=0, numeric_only=False):
-            res, cols = preparse_computations(self, axis, True, numeric_only)
-            return (q('{[row] count each row}',res), cols)
+        res, cols = preparse_computations(self, axis, True, numeric_only)
+        return (q('count each', res), cols)

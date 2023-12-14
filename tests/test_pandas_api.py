@@ -1406,42 +1406,35 @@ def test_df_add_prefix(kx, q):
     q('sym:`aaa`bbb`ccc')
     t = q('([] 10?sym; til 10; 10?10; 10?1f)')
 
-    rez = t.add_prefix("col_")
-    
+    rez = t.add_prefix("col_", axis=1)
+
     assert(q('{x~y}', rez, t.pd().add_prefix("col_")))
 
     kt = kx.q('([idx:til 5] til 5; 5?5; 5?1f; (5;5)#100?" ")')
-    kt_res = kx.q('([idx: `col_0`col_1`col_2`col_3`col_4] til 5)')
-
-    rez = kt.add_prefix("col_")
-    assert(q('{x~y}', rez, kt.pd().add_prefix("col_")))
 
     rez = kt.add_prefix("col_", axis=1)
-    assert(q('{x~y}', kx.q("{(0!x) `idx}",rez), kx.q("{(0!x) `idx}",kt_res)))
+    assert(q('{x~y}', rez, kt.pd().add_prefix("col_")))
 
     with pytest.raises(ValueError):
-        t.add_prefix()
+        t.add_prefix("col_", axis=0)
+
 
 def test_df_add_suffix(kx, q):
     q('sym:`aaa`bbb`ccc')
     t = q('([] 10?sym; til 10; 10?10; 10?1f)')
 
-    rez = t.add_suffix("_col")
-    
+    rez = t.add_suffix("_col", axis=1)
+
     assert(q('{x~y}', rez, t.pd().add_suffix("_col")))
 
     kt = kx.q('([idx:til 5] til 5; 5?5; 5?1f; (5;5)#100?" ")')
-    kt_res = kx.q('([idx: `0_col`1_col`2_col`3_col`4_col] til 5)')
 
     rez = kt.add_suffix("_col", axis=1)
-    assert(q('{x~y}', kx.q("{(0!x) `idx}",rez), kx.q("{(0!x) `idx}",kt_res)))
-
-
-    rez = kt.add_suffix("_col")
     assert(q('{x~y}', rez, kt.pd().add_suffix("_col")))
 
     with pytest.raises(ValueError):
-        t.add_suffix()
+        t.add_suffix("_col", axis=0)
+
 
 @pytest.mark.pandas_api
 @pytest.mark.xfail(reason='Flaky randomization')

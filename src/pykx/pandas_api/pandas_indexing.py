@@ -328,32 +328,6 @@ def _rename_columns(tab, labels):
                  tab, labels)  # noqa
     else:
         return q('{c:cols x; c:@[c;c?key y;y]; c xcol x}', tab, labels)
-    
-
-def _pre_suf_fix_columns(tab, fix, suf= True):
-        if "Keyed" in str(type(tab)):
-            f =  ("c: `$ (string c) ,\: string y;" if suf 
-                    else "c: `$(string y) ,/: string c;")
-            return q("{c:cols value x;"
-                     + f 
-                     + "key[x]!c xcol value x}",
-                    tab, fix)  # noqa
-        else:
-            f = ("c: `$(string c) ,\: string y;" if suf 
-                 else "c: `$ (string y) ,/: string c;")
-            return q('{c:cols x;' + f + 'c xcol x}', tab, fix)
-        
-        
-def _pre_suf_fix_index(tab, fix, suf= True):
-        if "Keyed" in str(type(tab)):
-            f =  ("idx: `$(string idx) ,\: string y;"  if suf 
-                  else " idx: `$(string y) ,/: string idx;" )
-            return q("{idx:first flip key x;" 
-                     + f 
-                     + "([] idx)!value x}",
-                    tab, fix)  # noqa
-        else:
-            return ValueError('nyi')
 
 
 class PandasIndexing:
@@ -480,30 +454,26 @@ class PandasReindexing:
 
         return t
     
-    def add_suffix(self, suffix=None, axis=0):
+    def add_suffix(self, suffix, axis=0):
         t = self
-        if suffix:
-            if axis == 0:
-                t = _pre_suf_fix_columns(t, suffix, suf=True)
-            elif axis == 1:
-                t = _pre_suf_fix_index(t, suffix, suf=True)
-            else:
-                raise ValueError(f'No axis named {axis}')
+        if axis == 1:
+            c_str = 'cols value' if "Keyed" in str(type(t)) else 'cols'
+            t =  q(f'{{(c!`$string[c:{c_str} y],\:string x)xcol y}}', suffix, t)
+        elif axis == 0:
+            raise ValueError('nyi')
         else:
-                raise ValueError("missing 1 required positional argument: 'suffix'")
+            raise ValueError(f'No axis named {axis}')
         return t
-    
-    def add_prefix(self, prefix=None, axis=0):
+
+    def add_prefix(self, prefix, axis=0):
         t = self
-        if prefix:
-            if axis == 0:
-                t = _pre_suf_fix_columns(t, prefix, suf=False)
-            elif axis == 1:
-                t = _pre_suf_fix_index(t, prefix, suf=False)
-            else:
-                raise ValueError(f'No axis named {axis}')
+        if axis == 1:
+            c_str = 'cols value' if "Keyed" in str(type(t)) else 'cols'
+            t = q(f'{{(c!`$string[x],/:string c:{c_str} y)xcol y}}', prefix, t)
+        elif axis == 0:
+            raise ValueError('nyi')
         else:
-                raise ValueError("missing 1 required positional argument: 'prefix'")
+            raise ValueError(f'No axis named {axis}')
         return t
 
     def sample(self, n=None, frac=None, replace=False, weights=None,
@@ -618,7 +588,7 @@ class TableAt(MetaAtomic):
     def __getitem__(self, loc):
         if not isinstance(loc, tuple) or len(loc) != 2:
             raise ValueError('Expected 2 values for call to Table.at[]')
-        if q('{y in keys x(string y)}', self.tab, loc[1]):
+        if q('{y in keys x}', self.tab, loc[1]):
             raise QError('Can\'t get the value of a key in a KeyedTable using at.')
         return q('{x[y][z]}', self.tab, loc[0], loc[1])
 
