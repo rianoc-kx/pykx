@@ -139,7 +139,7 @@ class PandasMeta:
     def values(self):
         tab = self
         return q('value peach', tab)
-    
+
     @api_return
     def mean(self, axis: int = 0, numeric_only: bool = False):
         tab = self
