@@ -260,7 +260,7 @@ class PandasMeta:
     @api_return
     def values(self, skipna = True, numeric_only = False):
         tab = self
-        return q('{[table] flip value flip table}', tab)
+        return q('value peach', tab)
     
     def agg(self, func, axis=0, *args, **kwargs): # noqa: C901
         if 'KeyedTable' in str(type(self)):
