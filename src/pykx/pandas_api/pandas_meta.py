@@ -1,5 +1,6 @@
 from . import api_return
 from ..exceptions import QError
+from typing import Union, Dict
 
 
 def _init(_q):
@@ -18,6 +19,8 @@ def _type_num_is_numeric_or_bool(typenum):
         return True
     return False
 
+def _type_num_is_float_or_real(typenum):
+    return typenum == 8 or typenum == 9
 
 def _get_numeric_only_subtable(tab):
     t = q('0#0!', tab)
@@ -47,6 +50,11 @@ def _get_bool_only_subtable(tab):
         if t[c].t == 1 or t[c].t == -1:
             bool_cols.append(c)
     return (tab[bool_cols], bool_cols)
+
+def _get_float_or_real_cols(tab):
+    t = q('0#0!', tab)
+    cols = q.cols(t).py()
+    return [col for col in cols if _type_num_is_float_or_real(t[col].t)]
 
 
 def preparse_computations(tab, axis=0, skipna=True, numeric_only=False, bool_only=False):
@@ -102,6 +110,28 @@ _type_mapping = {'c': b'kx.Char',
                  't': b'kx.Time',
                  'm': b'kx.Month',
                  '': b'kx.List'}
+
+# Define the mapping between the typenum returned by pykx.*Vector.t and its typechar
+_typenum_to_typechar_mapping = {
+                0: '',
+                1: 'b',
+                2: 'g',
+                4: 'x',
+                5: 'h',
+                6: 'i',
+                7: 'j',
+                8: 'e',
+                9: 'f',
+                10: 'c',
+                11: 's',
+                12: 'p',
+                14: 'd',
+                15: 'z',
+                16: 'n',
+                17: 'u',
+                18: 'v',
+                19: 't',
+                13: 'm'}
 
 
 class PandasMeta:
@@ -209,6 +239,31 @@ class PandasMeta:
         if numeric_only:
             tab = _get_numeric_only_subtable(self)
         return q.abs(tab)
+
+    @api_return
+    def round(self, decimals: Union[int, Dict[str, int]] = 0):
+        tab = self
+        if 'Keyed' in str(type(tab)):
+            tab = q('{(keys x) _ 0!x}', tab)
+
+        numeric_cols = _get_float_or_real_cols(tab)
+        col_type_dict = dict([(col, _typenum_to_typechar_mapping[tab[col].t].upper())
+                              for col in numeric_cols])
+
+        # receives a column to decimals dictionary (d) and a column to typechar dictionary (t)
+        # and generates the functional qSQL operations i.e.
+        # {y$.Q.f[z]x}[;"F";2]' `c1
+        generate_ops = q("{[d;t]({[c;d;t](({string[y][0]$.Q.f[z]x}[;t[c];d[c]]');c)}[;d;t]')key[d]}")
+
+        if type(decimals) is int:
+            validated = dict([(col, decimals) for col in numeric_cols])
+        else:
+            validated = dict([(k, v) for k, v in decimals.items() if k in numeric_cols])
+
+        return q("{![x;();0b;y!z]}",
+                 tab,
+                 list(validated.keys()),
+                 generate_ops(validated, col_type_dict))
 
     @convert_result
     def all(self, axis=0, bool_only=False, skipna=True):
