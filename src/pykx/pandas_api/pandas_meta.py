@@ -255,7 +255,7 @@ class PandasMeta:
         # {y$.Q.f[z]x}[;"F";2]' `c1
         generate_ops = q("{[d;t]({[c;d;t](({string[y][0]$.Q.f[z]x}[;t[c];d[c]]');c)}[;d;t]')key[d]}")
 
-        if type(decimals) is int:
+        if isinstance(decimals, int):
             validated = dict([(col, decimals) for col in numeric_cols])
         else:
             validated = dict([(k, v) for k, v in decimals.items() if k in numeric_cols])
