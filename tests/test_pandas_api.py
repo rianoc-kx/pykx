@@ -2029,3 +2029,19 @@ def test_keyed_loc_fixes(q):
         mkt[['k1', 'y']]
     with pytest.raises(KeyError):
         mkt['k1']
+
+def test_isnull(q):
+    tab = q('''([]g:3#0Ni;h:3#0Nh;in:3#0Ni;j:3#0Nj;
+                  e:3#0Ne;f:3#0Nf;s: 3#`  ;p:3#0Np;
+                  m:3#0Nm;d:3#0Nd;n: 3#0Nn;
+                  u:3#0Nu;v:3#0Nv;t: 3#0Nt;c:3#" ")''')
+    assert all(tab.isnull())
+    assert all(tab.isna())
+    assert all(tab.notna())
+    
+    tab_pd = tab.pd()
+    assert pd.testing.assert_frame_equal(tab.isnull().pd(), tab_pd.isnull())
+    assert pd.testing.assert_frame_equal(tab.isna().pd(), tab_pd.isna())
+    assert pd.testing.assert_frame_equal(tab.notna().pd(), tab_pd.notna())
+    
+    
