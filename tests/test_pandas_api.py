@@ -1489,6 +1489,70 @@ def test_df_sample(kx, q):
         t.sample(ignore_index=True)
 
 
+def test_sem(kx, q):
+    df = pd.DataFrame(
+        {
+            'a': [1, 2, 2, 4],
+            'b': [1, 2, 6, 7],
+            'c': [7, 8, 9, 10],
+            'd': [7, 11, 14, 14]
+        }
+    )
+    tab = kx.toq(df)
+    p_m = df.sem()
+    q_m = tab.sem()
+    for c in q.key(q_m).py():
+        assert p_m[c] == pytest.approx(q_m[c].py(), 1e-16)
+
+    p_m = df.sem(axis=1)
+    q_m = tab.sem(axis=1)
+    for c in range(len(q.cols(tab))):
+        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+    p_m = df.sem(ddof=0)
+    q_m = tab.sem(ddof=0)
+    for c in q.key(q_m).py():
+        assert p_m[c] ==  pytest.approx(q_m[c].py(),  1e-16)
+
+    p_m = df.sem(ddof=4)
+    q_m = tab.sem(ddof=4)
+    for c in q.key(q_m).py():
+        assert np.isnan(p_m[c]) == np.isnan(q_m[c].py())
+
+    q['tab'] = kx.toq(df)
+    tab = q('1!`idx xcols update idx: til count tab from tab')
+    p_m = df.sem()
+    q_m = tab.sem()
+    for c in q.key(q_m).py():
+        assert p_m[c] ==  pytest.approx(q_m[c].py(), 1e-16)
+    p_m = df.sem(axis=1)
+    q_m = tab.sem(axis=1)
+    for c in range(len(q.cols(tab)) - 1):
+        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+
+    df = pd.DataFrame(
+        {
+            'a': [1, 2, 2, 4],
+            'b': [1, 2, 6, 7],
+            'c': [7, 8, 9, 10],
+            'd': ['foo', 'bar', 'baz', 'qux']
+        }
+    )
+    tab = kx.toq(df)
+    p_m = df.sem(numeric_only=True)
+    q_m = tab.sem(numeric_only=True)
+    for c in q.key(q_m).py():
+        assert p_m[c] ==  pytest.approx(q_m[c].py(), 1e-16)
+    p_m = df.sem(axis=1, numeric_only=True)
+    q_m = tab.sem(axis=1, numeric_only=True)
+    for c in range(len(q.cols(tab))):
+        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+
+    with pytest.raises(kx.QError):
+        q_m = tab.sem()
+    with pytest.raises(kx.QError):
+        q_m = tab.sem(axis=1)
+
+
 def test_mean(kx, q):
     df = pd.DataFrame(
         {
