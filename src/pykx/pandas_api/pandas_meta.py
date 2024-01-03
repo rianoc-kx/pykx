@@ -202,7 +202,7 @@ class PandasMeta:
             f'cs !/: {flip_m}m}}',
             tab
         )
-    
+
     @api_return
     def sem(self, axis: int = 0, ddof: int = 1, numeric_only: bool = False):
         tab = self
@@ -219,7 +219,7 @@ class PandasMeta:
 
         if ddof == len(tab):
             return q(f'{{[tab]{query_str}!count[{query_str}]#0n}}', tab)
-        
+
         return q(
             '{[tab]'
             f'r:{{[tab; x] ({key_str}x; {x_sed} {val_str}tab[x])}}[tab;] each {query_str};'

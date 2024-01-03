@@ -1507,11 +1507,11 @@ def test_sem(kx, q):
     p_m = df.sem(axis=1)
     q_m = tab.sem(axis=1)
     for c in range(len(q.cols(tab))):
-        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+        assert p_m[c] == pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
     p_m = df.sem(ddof=0)
     q_m = tab.sem(ddof=0)
     for c in q.key(q_m).py():
-        assert p_m[c] ==  pytest.approx(q_m[c].py(),  1e-16)
+        assert p_m[c] == pytest.approx(q_m[c].py(),  1e-16)
 
     p_m = df.sem(ddof=4)
     q_m = tab.sem(ddof=4)
@@ -1523,11 +1523,11 @@ def test_sem(kx, q):
     p_m = df.sem()
     q_m = tab.sem()
     for c in q.key(q_m).py():
-        assert p_m[c] ==  pytest.approx(q_m[c].py(), 1e-16)
+        assert p_m[c] == pytest.approx(q_m[c].py(), 1e-16)
     p_m = df.sem(axis=1)
     q_m = tab.sem(axis=1)
     for c in range(len(q.cols(tab)) - 1):
-        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+        assert p_m[c] == pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
 
     df = pd.DataFrame(
         {
@@ -1541,11 +1541,11 @@ def test_sem(kx, q):
     p_m = df.sem(numeric_only=True)
     q_m = tab.sem(numeric_only=True)
     for c in q.key(q_m).py():
-        assert p_m[c] ==  pytest.approx(q_m[c].py(), 1e-16)
+        assert p_m[c] == pytest.approx(q_m[c].py(), 1e-16)
     p_m = df.sem(axis=1, numeric_only=True)
     q_m = tab.sem(axis=1, numeric_only=True)
     for c in range(len(q.cols(tab))):
-        assert p_m[c] ==  pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
+        assert p_m[c] == pytest.approx(q_m[q('{`$string x}', c)].py(), 1e-16)
 
     with pytest.raises(kx.QError):
         q_m = tab.sem()
