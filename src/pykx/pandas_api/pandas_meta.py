@@ -215,14 +215,14 @@ class PandasMeta:
         val_str = '' if axis == 0 else '"f"$value '
         query_str = 'cols[tab]' if axis == 0 else 'til[count[tab]]'
         where_str = ' where not (::)~/:r[;1]'
-        sed_str = f'{{dev[x] % sqrt count[x]-{ddof}}}'
+        sem_str = f'{{dev[x] % sqrt count[x]-{ddof}}}'
 
         if ddof == len(tab):
             return q(f'{{[tab]{query_str}!count[{query_str}]#0n}}', tab)
 
         return q(
             '{[tab]'
-            f'r:{{[tab; x] ({key_str}x; {sed_str} {val_str}tab[x])}}[tab;] each {query_str};'
+            f'r:{{[tab; x] ({key_str}x; {sem_str} {val_str}tab[x])}}[tab;] each {query_str};'
             f'(,/) {{(enlist x 0)!(enlist x 1)}} each r{where_str}}}',
             tab
         )
