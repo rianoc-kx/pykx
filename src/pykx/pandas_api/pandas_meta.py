@@ -1,6 +1,7 @@
+from typing import Dict, Union
+
 from . import api_return
 from ..exceptions import QError
-from typing import Union, Dict
 
 
 def _init(_q):
@@ -19,8 +20,10 @@ def _type_num_is_numeric_or_bool(typenum):
         return True
     return False
 
+
 def _type_num_is_float_or_real(typenum):
     return typenum == 8 or typenum == 9
+
 
 def _get_numeric_only_subtable(tab):
     t = q('0#0!', tab)
@@ -50,6 +53,7 @@ def _get_bool_only_subtable(tab):
         if t[c].t == 1 or t[c].t == -1:
             bool_cols.append(c)
     return (tab[bool_cols], bool_cols)
+
 
 def _get_float_or_real_cols(tab):
     t = q('0#0!', tab)
@@ -111,7 +115,8 @@ _type_mapping = {'c': b'kx.Char',
                  'm': b'kx.Month',
                  '': b'kx.List'}
 
-# Define the mapping between the typenum returned by pykx.*Vector.t and its typechar
+
+# Define the mapping between the returns of kx.*Vector.t and the associated typechar
 _typenum_to_typechar_mapping = {
                 0: '',
                 1: 'b',
@@ -246,24 +251,30 @@ class PandasMeta:
         if 'Keyed' in str(type(tab)):
             tab = q('{(keys x) _ 0!x}', tab)
 
-        numeric_cols = _get_float_or_real_cols(tab)
-        col_type_dict = dict([(col, _typenum_to_typechar_mapping[tab[col].t].upper())
-                              for col in numeric_cols])
+        affected_cols = _get_float_or_real_cols(tab)
+        type_dict = dict([(c, _typenum_to_typechar_mapping[tab[c].t].upper())
+                          for c in affected_cols])
 
-        # receives a column to decimals dictionary (d) and a column to typechar dictionary (t)
-        # and generates the functional qSQL operations i.e.
-        # {y$.Q.f[z]x}[;"F";2]' `c1
-        generate_ops = q("{[d;t]({[c;d;t](({string[y][0]$.Q.f[z]x}[;t[c];d[c]]');c)}[;d;t]')key[d]}")
+        # receives a column to decimals dictionary (d) and a column to
+        # typechar dictionary (t) and generates the functional qSQL operations
+        # i.e. {y$.Q.f[z]x}[;"F";2]' `c1
+        generate_ops = q(
+            "{[d;t]"
+            "({[c;d;t]"
+            "round:{string[y][0]$.Q.f[z]x};"
+            "((round[;t[c];d[c]]');c)}"
+            "[;d;t]')key[d]}")
 
         if isinstance(decimals, int):
-            validated = dict([(col, decimals) for col in numeric_cols])
+            dec_dict = dict([(c, decimals) for c in affected_cols])
         else:
-            validated = dict([(k, v) for k, v in decimals.items() if k in numeric_cols])
+            dec_dict = dict([(c, d) for c, d in decimals.items()
+                             if c in affected_cols])
 
         return q("{![x;();0b;y!z]}",
                  tab,
-                 list(validated.keys()),
-                 generate_ops(validated, col_type_dict))
+                 list(dec_dict.keys()),
+                 generate_ops(dec_dict, type_dict))
 
     @convert_result
     def all(self, axis=0, bool_only=False, skipna=True):
