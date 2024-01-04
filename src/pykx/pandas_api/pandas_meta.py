@@ -117,26 +117,25 @@ _type_mapping = {'c': b'kx.Char',
 
 
 # Define the mapping between the returns of kx.*Vector.t and the associated typechar
-_typenum_to_typechar_mapping = {
-                0: '',
-                1: 'b',
-                2: 'g',
-                4: 'x',
-                5: 'h',
-                6: 'i',
-                7: 'j',
-                8: 'e',
-                9: 'f',
-                10: 'c',
-                11: 's',
-                12: 'p',
-                14: 'd',
-                15: 'z',
-                16: 'n',
-                17: 'u',
-                18: 'v',
-                19: 't',
-                13: 'm'}
+_typenum_to_typechar_mapping = {0: '',
+                                1: 'b',
+                                2: 'g',
+                                4: 'x',
+                                5: 'h',
+                                6: 'i',
+                                7: 'j',
+                                8: 'e',
+                                9: 'f',
+                                10: 'c',
+                                11: 's',
+                                12: 'p',
+                                14: 'd',
+                                15: 'z',
+                                16: 'n',
+                                17: 'u',
+                                18: 'v',
+                                19: 't',
+                                13: 'm'}
 
 
 class PandasMeta:
