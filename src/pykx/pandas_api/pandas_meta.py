@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Dict, Union
 
 from . import api_return
@@ -19,10 +20,6 @@ def _type_num_is_numeric_or_bool(typenum):
     if typenum >= 4 and typenum <= 9 or typenum == 1:
         return True
     return False
-
-
-def _type_num_is_float_or_real(typenum):
-    return typenum == 8 or typenum == 9
 
 
 def _get_numeric_only_subtable(tab):
@@ -53,12 +50,6 @@ def _get_bool_only_subtable(tab):
         if t[c].t == 1 or t[c].t == -1:
             bool_cols.append(c)
     return (tab[bool_cols], bool_cols)
-
-
-def _get_float_or_real_cols(tab):
-    t = q('0#0!', tab)
-    cols = q.cols(t).py()
-    return [col for col in cols if _type_num_is_float_or_real(t[col].t)]
 
 
 def preparse_computations(tab, axis=0, skipna=True, numeric_only=False, bool_only=False):
@@ -246,34 +237,26 @@ class PandasMeta:
 
     @api_return
     def round(self, decimals: Union[int, Dict[str, int]] = 0):
-        tab = self
+        tab = copy(self)
         if 'Keyed' in str(type(tab)):
-            tab = q('{(keys x) _ 0!x}', tab)
+            tab = q.value(tab)
 
-        affected_cols = _get_float_or_real_cols(tab)
-        type_dict = dict([(c, _typenum_to_typechar_mapping[tab[c].t].upper())
-                          for c in affected_cols])
+        affected_cols = _get_numeric_only_subtable(tab).columns.py()
+        type_dict = dict([(col, _typenum_to_typechar_mapping[tab[col].t])
+                          for col in affected_cols])
 
-        # receives a column to decimals dictionary (d) and a column to
-        # typechar dictionary (t) and generates the functional qSQL operations
-        # i.e. {y$.Q.f[z]x}[;"F";2]' `c1
-        generate_ops = q(
-            "{[d;t]"
-            "({[c;d;t]"
-            "round:{string[y][0]$.Q.f[z]x};"
-            "((round[;t[c];d[c]]');c)}"
-            "[;d;t]')key[d]}")
+        cast_back = q('{string[y][0]$x}')
 
         if isinstance(decimals, int):
-            dec_dict = dict([(c, decimals) for c in affected_cols])
+            dec_dict = dict([(col, decimals) for col in affected_cols])
         else:
-            dec_dict = dict([(c, d) for c, d in decimals.items()
-                             if c in affected_cols])
+            dec_dict = dict([(col, d) for col, d in decimals.items()
+                             if col in affected_cols])
 
-        return q("{![x;();0b;y!z]}",
-                 tab,
-                 list(dec_dict.keys()),
-                 generate_ops(dec_dict, type_dict))
+        for col in dec_dict.keys():
+            tab[col] = [cast_back(round(elem, dec_dict[col]), type_dict[col])
+                        for elem in tab[col]]
+        return tab
 
     @convert_result
     def all(self, axis=0, bool_only=False, skipna=True):
