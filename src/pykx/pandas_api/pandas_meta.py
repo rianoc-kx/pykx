@@ -1,7 +1,6 @@
 from . import api_return
 from ..exceptions import QError
 
-
 def _init(_q):
     global q
     q = _q
@@ -209,7 +208,33 @@ class PandasMeta:
         if numeric_only:
             tab = _get_numeric_only_subtable(self)
         return q.abs(tab)
-
+    
+    @api_return
+    def isin(self, values):
+        tab = self
+        # Function to check wether the elements of a list are in another list and what places
+        q('f: {[val; col] '
+            'fval: $[10h = type[val]; enlist[val]; val];'
+            '1h$(+/){'
+                '$[abs[type x] = abs[type y]; '
+                    'x = y; '
+                'type[y] = 0h; '
+                    '{[z; p]$[type[z] = type[p]; z ~ p; 0b]}[x;] peach y;'
+                'count[y]#0b]}[;col] each fval}')
+        q('g: {[tab; values] '
+            'table_dict: flip tab;' 
+            'fvalues: $[98h = type values; flip values; values];'
+            'submatrix: (,/) {[k; v; d]enlist[k]!enlist f[raze enlist[v[k]]; d[k]]}[;fvalues; table_dict] peach key fvalues; '
+            'non_selected: cols[tab] except key fvalues;'
+            'non_selected_fills:(,/) {[k; d]enlist[k]!enlist count[d[k]]#0b}[;table_dict] peach non_selected;'
+            'cols[tab] xcols flip submatrix,non_selected_fills}')
+        if 'Table' in str(type(values)) or 'DataFrame' in str(type(values)):
+            return q('g', tab, values)
+        elif 'dict' in str(type(values)) or 'Dictionary' in str(type(values)):
+            return q('g', tab, values)
+        elif 'list' in str(type(values)) or 'List' in str(type(values)) or 'Vector' in str(type(values)):
+            return q("{[tab; values]flip (cols tab)!f[values; ] each value flip tab}", tab, values)
+    
     @convert_result
     def all(self, axis=0, bool_only=False, skipna=True):
         res, cols = preparse_computations(self, axis, skipna, bool_only=bool_only)
