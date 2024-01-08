@@ -229,6 +229,21 @@ class PandasMeta:
         ), cols)
 
     @convert_result
+    def idxmax(self, axis=0, skipna=True, numeric_only=False):
+        res, cols = preparse_computations(self, axis, skipna, numeric_only)
+        maximums = self.max(axis, skipna, numeric_only)
+        num_str = '9h$' if numeric_only else ''
+        func_str = '(::)' if axis==0 else 'column_names'
+        if(numeric_only):
+            (_, column_names) = _get_numeric_only_subtable_with_bools(self)
+        else:
+            column_names = q('cols', self)
+        op= q("{[row;col;maximums;column_names]"
+              f"{func_str}[({num_str}row) ?' maximums[col]]"
+              "}")
+        return (op(res, cols, maximums, column_names), cols)
+
+    @convert_result
     def min(self, axis=0, skipna=True, numeric_only=False):
         res, cols = preparse_computations(self, axis, skipna, numeric_only)
         return (q(
