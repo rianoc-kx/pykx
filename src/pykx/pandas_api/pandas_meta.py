@@ -1,4 +1,3 @@
-from copy import copy
 from typing import Dict, Union
 
 from . import api_return
@@ -237,26 +236,25 @@ class PandasMeta:
 
     @api_return
     def round(self, decimals: Union[int, Dict[str, int]] = 0):
-        tab = copy(self)
+        tab = self
         if 'Keyed' in str(type(tab)):
             tab = q.value(tab)
 
         affected_cols = _get_numeric_only_subtable(tab).columns.py()
-        type_dict = dict([(col, _typenum_to_typechar_mapping[tab[col].t])
-                          for col in affected_cols])
+        type_dict = {col: _typenum_to_typechar_mapping[tab[col].t] for col in affected_cols}
 
         cast_back = q('{string[y][0]$x}')
 
         if isinstance(decimals, int):
-            dec_dict = dict([(col, decimals) for col in affected_cols])
+            dec_dict = {col: decimals for col in affected_cols}
         else:
-            dec_dict = dict([(col, d) for col, d in decimals.items()
-                             if col in affected_cols])
+            dec_dict = {col: decimals[col] for col in affected_cols}
 
-        for col in dec_dict.keys():
-            tab[col] = [cast_back(round(elem, dec_dict[col]), type_dict[col])
-                        for elem in tab[col]]
-        return tab
+        rounded = {col: [cast_back(round(elem, dec_dict[col]), type_dict[col])
+                         for elem in tab[col]]
+                   for col in dec_dict}
+
+        return q.qsql.update(tab, columns=rounded)
 
     @convert_result
     def all(self, axis=0, bool_only=False, skipna=True):
