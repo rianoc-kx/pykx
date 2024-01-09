@@ -1825,6 +1825,14 @@ def test_pandas_idxmax(q):
     for c in q.key(q_m).py():
         assert p_m[c] == q_m[c].py()
 
+    tab = q('([]price: 250.0f - 100?500.0f; ints: 100 - 100?200)')
+    df = tab.pd()
+
+    q_m = tab.idxmax(axis=1)
+    p_m = df.idxmax(axis=1)
+    for c in q.key(q_m).py():
+        assert p_m[c] == q_m[c].py()
+
 
 def test_pandas_all(q):
     tab = q(

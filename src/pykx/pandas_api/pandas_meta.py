@@ -230,18 +230,11 @@ class PandasMeta:
 
     @convert_result
     def idxmax(self, axis=0, skipna=True, numeric_only=False):
-        res, cols = preparse_computations(self, axis, skipna, numeric_only)
-        maximums = self.max(axis, skipna, numeric_only)
-        num_str = '9h$' if numeric_only else ''
-        func_str = '(::)' if axis==0 else 'column_names'
-        if(numeric_only):
-            (_, column_names) = _get_numeric_only_subtable_with_bools(self)
-        else:
-            column_names = q('cols', self)
-        op= q("{[row;col;maximums;column_names]"
-              f"{func_str}[({num_str}row) ?' maximums[col]]"
-              "}")
-        return (op(res, cols, maximums, column_names), cols)
+        tab = self
+        res, cols = preparse_computations(tab, axis, skipna, numeric_only)
+        col_names = _get_numeric_only_subtable_with_bools(tab)[1] if numeric_only else tab.columns
+        max_vals = [elems.index(max(elems)) for elems in res]
+        return (max_vals if axis == 0 else [col_names[i] for i in max_vals], cols)
 
     @convert_result
     def min(self, axis=0, skipna=True, numeric_only=False):
