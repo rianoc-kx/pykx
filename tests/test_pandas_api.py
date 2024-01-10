@@ -2057,4 +2057,3 @@ def test_isnull(q):
     assert (tab.isna() == expected).all().all()
     assert (tab.isnull() == expected).all().all()
     assert (tab.notna() == q("not", expected)).all().all()
-
