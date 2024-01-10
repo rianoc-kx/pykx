@@ -2031,17 +2031,29 @@ def test_keyed_loc_fixes(q):
         mkt['k1']
 
 def test_isnull(q):
-    tab = q('''([]g:3#0Ni;h:3#0Nh;in:3#0Ni;j:3#0Nj;
-                  e:3#0Ne;f:3#0Nf;s: 3#`  ;p:3#0Np;
-                  m:3#0Nm;d:3#0Nd;n: 3#0Nn;
-                  u:3#0Nu;v:3#0Nv;t: 3#0Nt;c:3#" ")''')
-    assert all(tab.isnull())
-    assert all(tab.isna())
-    assert all(tab.notna())
+    tab = q('''([]
+        g:1#0Ng;    h:1#0Nh;    i1:1#0Ni; j:1#0Nj;
+        e:1#0Ne;    f:1#0Nf;    s:1#`  ;  p:1#0Np;
+        m:1#0Nm;    d:1#0Nd;    n:1#0Nn;  u:1#0Nu;
+        v:1#0Nv;    t:1#0Nt;    c:1#" ";
+        g2:1?0Ng;   h2:1?0Wh;   i2:1?10i; j2:1?10j;
+        e2:1?10e;   f2:1?10f;   s2:1#`foo;p2:1?10p;
+        m2:1?"m"$10;d2:1?"d"$10;n2:1?10n; u2:1?10u;
+        v2:1?10v;   t2:1?10t;   c2:1?" ")
+        ''')
     
-    tab_pd = tab.pd()
-    assert pd.testing.assert_frame_equal(tab.isnull().pd(), tab_pd.isnull())
-    assert pd.testing.assert_frame_equal(tab.isna().pd(), tab_pd.isna())
-    assert pd.testing.assert_frame_equal(tab.notna().pd(), tab_pd.notna())
-    
+    expected = q('''([]
+        g: 1#1b;h: 1#1b;i1:1#1b;j: 1#1b;
+        e: 1#1b;f: 1#1b;s: 1#1b;p: 1#1b;
+        m: 1#1b;d: 1#1b;n: 1#1b;u: 1#1b;
+        v: 1#1b;t: 1#1b;c: 1#1b;
+        g2:1#0b;h2:1#0b;i2:1#0b;j2:1#0b;
+        e2:1#0b;f2:1#0b;s2:1#0b;p2:1#0b;
+        m2:1#0b;d2:1#0b;n2:1#0b;u2:1#0b;
+        v2:1#0b;t2:1#0b;c2:1#0b)
+        ''')
+
+    assert (tab.isna()   == expected).all().all()
+    assert (tab.isnull() == expected).all().all()
+    assert (tab.notna()  == q("not", expected)).all().all()
     

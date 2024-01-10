@@ -313,16 +313,16 @@ class PandasMeta:
             return (q('{(flip enlist[`function]!enlist x)!y}', keyname, data))
 
     @api_return
-    def isnull(self):
+    def isna(self):
         tab = self
         return q.null(tab)
 
     @api_return
-    def isnan(self):
+    def isnull(self):
         tab = self
-        return tab.isnull()
+        return tab.isna()
 
     @api_return
     def notna(self):
         tab = self
-        return q('not', tab.isnull())
+        return q('not', tab.isna())
