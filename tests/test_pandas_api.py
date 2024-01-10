@@ -2030,6 +2030,7 @@ def test_keyed_loc_fixes(q):
     with pytest.raises(KeyError):
         mkt['k1']
 
+
 def test_isnull(q):
     tab = q('''([]
         g:1#0Ng;    h:1#0Nh;    i1:1#0Ni; j:1#0Nj;
@@ -2041,7 +2042,7 @@ def test_isnull(q):
         m2:1?"m"$10;d2:1?"d"$10;n2:1?10n; u2:1?10u;
         v2:1?10v;   t2:1?10t;   c2:1?" ")
         ''')
-    
+
     expected = q('''([]
         g: 1#1b;h: 1#1b;i1:1#1b;j: 1#1b;
         e: 1#1b;f: 1#1b;s: 1#1b;p: 1#1b;
@@ -2053,7 +2054,7 @@ def test_isnull(q):
         v2:1#0b;t2:1#0b;c2:1#0b)
         ''')
 
-    assert (tab.isna()   == expected).all().all()
+    assert (tab.isna() == expected).all().all()
     assert (tab.isnull() == expected).all().all()
-    assert (tab.notna()  == q("not", expected)).all().all()
-    
+    assert (tab.notna() == q("not", expected)).all().all()
+
