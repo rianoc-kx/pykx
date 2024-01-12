@@ -2034,8 +2034,7 @@ def test_values(q):
     col1 = q('10?100')
     col2 = q('10?`a`b`c`d')
     col3 = q('10?`x`y`z`1`2`3')
-    tab = q('{[price; sym; id] ([]p: price; s: sym; i: id)}', col1, col2, col3)
+    tab = q('{[price; sym; id] ([]p: price; s: sym; i: string id)}', col1, col2, col3)
     q_table = tab
     pandas_table = tab.pd()
-    lol = np.array(q_table.values())
-    assert pandas_table.values == np.array(q_table.values().py())
+    assert pandas_table.values.tolist() == q_table.values.py()

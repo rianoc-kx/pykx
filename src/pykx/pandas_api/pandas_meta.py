@@ -262,7 +262,6 @@ class PandasMeta:
             min_count
         ), cols)
 
-    
     def agg(self, func, axis=0, *args, **kwargs): # noqa: C901
         if 'KeyedTable' in str(type(self)):
             raise NotImplementedError("'agg' method not presently supported for KeyedTable")
