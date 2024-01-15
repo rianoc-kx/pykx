@@ -2043,17 +2043,20 @@ def test_isnull(q):
         v2:1?10v;   t2:1?10t;   c2:1?" ")
         ''')
 
-    expected = q('''([]
-        g: 1#1b;h: 1#1b;i1:1#1b;j: 1#1b;
-        e: 1#1b;f: 1#1b;s: 1#1b;p: 1#1b;
-        m: 1#1b;d: 1#1b;n: 1#1b;u: 1#1b;
-        v: 1#1b;t: 1#1b;c: 1#1b;
-        g2:1#0b;h2:1#0b;i2:1#0b;j2:1#0b;
-        e2:1#0b;f2:1#0b;s2:1#0b;p2:1#0b;
-        m2:1#0b;d2:1#0b;n2:1#0b;u2:1#0b;
-        v2:1#0b;t2:1#0b;c2:1#0b)
-        ''')
+    cols = ["g", "h", "i1", "j",
+            "e", "f", "s", "p",
+            "m", "d", "n", "u",
+            "v", "t", "c",
+            "g2", "h2", "i2", "j2",
+            "e2", "f2", "s2", "p2",
+            "m2", "d2", "n2", "u2",
+            "v2", "t2", "c2"]
 
-    assert (tab.isna() == expected).all().all()
-    assert (tab.isnull() == expected).all().all()
-    assert (tab.notna() == q("not", expected)).all().all()
+    expected = pd.DataFrame.from_dict({c: [True] if i < 15 else [False]
+                                       for i, c in enumerate(cols)})
+    expected_inv = ~expected
+
+    pd.testing.assert_frame_equal(tab.isna().pd(), expected)
+    pd.testing.assert_frame_equal(tab.isnull().pd(), expected)
+    pd.testing.assert_frame_equal(tab.notna().pd(), expected_inv)
+    pd.testing.assert_frame_equal(tab.notnull().pd(), expected_inv)

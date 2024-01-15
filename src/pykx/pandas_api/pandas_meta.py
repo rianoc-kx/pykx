@@ -314,15 +314,16 @@ class PandasMeta:
 
     @api_return
     def isna(self):
-        tab = self
-        return q.null(tab)
+        return q.null(self)
 
     @api_return
     def isnull(self):
-        tab = self
-        return tab.isna()
+        return self.isna()
 
     @api_return
     def notna(self):
-        tab = self
-        return q('not', tab.isna())
+        return q('not', self.isna())
+
+    @api_return
+    def notnull(self):
+        return self.notna()
