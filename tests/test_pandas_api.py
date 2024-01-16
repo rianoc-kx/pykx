@@ -2065,4 +2065,9 @@ def test_nunique(kx, q):
     for c in q.key(q_m).py():
         assert p_m[c] == q_m[c].py()
 
+    tab = kx.q('([]A:("";" ";"";"foo"))')
+    df = tab.pd()
+    p_m = df.nunique()
+    q_m = tab.nunique()
+    assert p_m['A'] == 1 + q_m['A'].py()
 
